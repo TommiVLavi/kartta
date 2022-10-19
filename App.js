@@ -1,8 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
-import { Button, Keyboard, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Button, Keyboard, StyleSheet, Text, TextInput, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Constants from 'expo-constants';
+import * as Location from 'expo-location'
 import { API_KEY } from '@env';
 
 export default function App() {
@@ -14,6 +15,27 @@ export default function App() {
   }
   const [place, setPlace] = useState(intial)
   const [address, setAddress] = useState('')
+
+
+  useEffect(() => {
+    const fetchingLoc = async () => {
+      let {status} = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Ei ole lupaa saada sijaintisi')
+        return;
+      } else {
+        try {
+          let location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+          console.log(Location)
+          setPlace({...place, latitude: location.coords.latitude, longitude: location.coords.longitude});
+        } catch (error) {
+          console.log(error.message)
+        }
+      }
+    }
+    fetchingLoc();
+  }, [])
+
 
   const fetching = async (address) => {
     console.log(address)
